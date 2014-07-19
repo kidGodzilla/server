@@ -12,7 +12,7 @@ This application is beeing developed by volonteers and will eventually replace t
     * Node.js and Bower packages: `npm install & bower install`
     * MySql server and client
 * Configure:
-    * Edit the `config.json` file at the root of the project.
+    * Edit the `config/config.json` file at the root of the project.
     * Create the MySQL schema for the main database and the session database (see config file).
 * Run:
     * Terminal 1: `brunch watch` — watches the project with continuous rebuild.
