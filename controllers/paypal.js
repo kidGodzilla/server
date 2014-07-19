@@ -2,7 +2,8 @@
  * PayPal controller.
  */
 var paypal = require('paypal-rest-sdk'),
-    db = require('../models');
+    db = require('../models'),
+    config = require('../config/config');
 
 /**
  * Initiates a payment with PayPal.
@@ -129,7 +130,7 @@ exports.execute = function (req, res) {
                 total: membership.total
             });
         }).then(function (newMembership) {
-            res.redirect('/app/payment/complete');
+            res.redirect(config.appBaseUrl + '/payment/complete');
         }).catch(function (error) {
             res.send(500, error);
         });

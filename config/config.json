@@ -30,5 +30,6 @@
             "user": "sender@domain.com",
             "pass": "thepassword"
         }
-    }
+    },
+    "appBaseUrl": "http://localhost:4200"
 }

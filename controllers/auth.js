@@ -1,7 +1,8 @@
 /**
  * Authentication controller.
  */
-var db = require('../models');
+var db = require('../models'),
+    config = require('../config/config');
 
 /**
  * Sends the connectec user back to the client after authentication.
@@ -29,5 +30,5 @@ exports.ensureAuthenticated = function (req, res, next) {
  */
 exports.logout = function (req, res) {
     req.logout();
-    res.redirect('/app');
+    res.redirect(config.appBaseUrl);
 };
