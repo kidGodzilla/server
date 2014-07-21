@@ -4,7 +4,7 @@ var express = require('express'),
     app = express(),
     db = require('./models'),
     passport = require('passport'),
-    config = require('./config/config'),
+    config = require('./config/config')(),
     mailer = require('express-mailer'),
     jade = require('jade'),
     domain = require('domain'),
@@ -25,7 +25,7 @@ paypal.configure(config.paypal);
 mailer.extend(app, config.smtp);
 
 // Global error handler
-// Note: must be improved to use clusters (see http://nodejs.org/api/domain.html)
+// TODO: must be improved to use clusters (see http://nodejs.org/api/domain.html)
 function domainWrapper() {
     return function (req, res, next) {
         var reqDomain = domain.create();

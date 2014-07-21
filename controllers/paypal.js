@@ -3,7 +3,7 @@
  */
 var paypal = require('paypal-rest-sdk'),
     db = require('../models'),
-    config = require('../config/config');
+    config = require('../config/config')();
 
 /**
  * Initiates a payment with PayPal.

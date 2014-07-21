@@ -2,7 +2,7 @@
  *  Configures a connection to the database and to collects all model definitions.
  */
 var fs = require('fs'),
-    config = require('../config/config'),
+    config = require('../config/config')(),
     path = require('path'),
     Sequelize = require('sequelize'),
     lodash = require('lodash'),

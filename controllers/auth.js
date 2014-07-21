@@ -2,7 +2,7 @@
  * Authentication controller.
  */
 var db = require('../models'),
-    config = require('../config/config');
+    config = require('../config/config')();
 
 /**
  * Sends the connectec user back to the client after authentication.
