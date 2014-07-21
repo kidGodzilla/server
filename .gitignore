@@ -22,7 +22,7 @@ Thumbs.db
 *.iml
 
 # Config
-/config/dev-config.json
+/config/development.json
 
 # Dependencies
 /node_modules
