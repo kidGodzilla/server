@@ -15,7 +15,7 @@ var express = require('express'),
 
 // Configure express app
 app.set('port', process.env.PORT || config.port);
-app.set('views', __dirname + '/server/views');
+app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 // Configure paypal
