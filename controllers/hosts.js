@@ -17,17 +17,17 @@ exports.index = function (req, res) {
         membershipWhere = { expireAt: { gt: new Date() } };
 
     // Prepare host where condition (hide suspended/pending hosts to non admin users)
+    // $BUG: hostWhere must always contain at least one condition, otherwise the query fails
     var hostWhere = Sequelize.and();
+    hostWhere.args.push({ isSuspended: false });
     if (!req.user || !req.user.isAdmin) {
         hostWhere.args.push({ isPending: false });
-        hostWhere.args.push({ isSuspended: false });
-    } else if (req.query.pendingOnly === 'true') {
+    } else {
         // Only admins can view pending/suspended hosts
-        hostWhere.args.push({ isPending: true });
+        if (req.query.pendingOnly === 'true') {
+            hostWhere.args.push({ isPending: true });
+        }
     }
-
-    // Keep the host where condition only if it contains at least one filter
-    hostWhere = hostWhere.args.length ? hostWhere : null;
 
     // Prepare user where condition
     var userWhere = null;

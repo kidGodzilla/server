@@ -30,5 +30,5 @@ exports.ensureAuthenticated = function (req, res, next) {
  */
 exports.logout = function (req, res) {
     req.logout();
-    res.redirect(config.appBaseUrl + '/');
+    res.send(200, "Bye!");
 };

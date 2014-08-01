@@ -17,24 +17,11 @@ var memberships = require('./controllers/memberships');
  */
 module.exports = function (app, passport) {
 
-    // Add support for cross-origin resource sharing (localhost only)
-    app.all('*', function(req, res, next) {
-        if (app.get('env') === 'development') {
-            res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
-            res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-            res.header('Access-Control-Allow-Credentials', 'true');
-            res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-        }
-        next();
-    });
-
-    app.get('/app*', application.index);
-
-    app.post('/login', passport.authenticate('local'), auth.loginCallback);
-    app.get('/logout', auth.logout);
-
     app.get('/payment/start', auth.ensureAuthenticated, paypal.start);
     app.get('/payment/execute', auth.ensureAuthenticated, paypal.execute);
+
+    app.post('/api/users/login', passport.authenticate('local'), auth.loginCallback);
+    app.post('/api/users/logout', auth.logout);
 
     app.get('/api/users', auth.ensureAuthenticated, users.index);
     app.get('/api/users/:id', auth.ensureAuthenticated, users.single);
