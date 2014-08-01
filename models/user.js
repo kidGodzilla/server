@@ -45,7 +45,7 @@ module.exports = function (sequelize, DataTypes) {
             associate: function (models) {
                 User.hasOne(models.Host, { onDelete: 'cascade' });
                 User.hasOne(models.Wwoofer, { onDelete: 'cascade' });
-                User.hasMany(models.Membership);
+                User.hasMany(models.Membership, { onDelete: 'cascade', as: 'memberships' });
             }
         },
         instanceMethods: {

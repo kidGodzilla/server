@@ -13,16 +13,16 @@ exports.index = function (req, res) {
     // Extract query params
     var limit = isNaN(parseInt(req.query.limit)) ? 20 : parseInt(req.query.limit),
         offset = isNaN(parseInt(req.query.offset)) ? 0 : parseInt(req.query.offset),
-        dptWhere = req.query.dpt ? { id: req.query.dpt } : null;
+        dptWhere = req.query.dpt ? { id: req.query.dpt } : null,
+        membershipWhere = { expireAt: { gt: new Date() } };
 
-    // Prepare host where condition
-    // TODO: user should be able to get their own profile no matter what
+    // Prepare host where condition (hide suspended/pending hosts to non admin users)
     var hostWhere = Sequelize.and();
-    req.query.userId ? hostWhere.args.push({ userId: req.query.userId }) : null;
     if (!req.user || !req.user.isAdmin) {
         hostWhere.args.push({ isPending: false });
+        hostWhere.args.push({ isSuspended: false });
     } else if (req.query.pendingOnly === 'true') {
-        // Only admins can view pending hosts
+        // Only admins can view pending/suspended hosts
         hostWhere.args.push({ isPending: true });
     }
 
@@ -30,12 +30,13 @@ exports.index = function (req, res) {
     hostWhere = hostWhere.args.length ? hostWhere : null;
 
     // Prepare user where condition
-    var userWhere = req.query.searchTerm
-        ? Sequelize.or(
-        ['firstName like ?', '%' + searchTerm + '%'],
-        ['lastName like ?', '%' + searchTerm + '%']
-    )
-        : null;
+    var userWhere = null;
+    if (req.query.searchTerm) {
+        userWhere = Sequelize.or(
+            ['firstName like ?', '%' + req.query.searchTerm + '%'],
+            ['lastName like ?', '%' + req.query.searchTerm + '%']
+        )
+    }
 
     // Find all hosts matching parameters
     db.Host.findAndCountAll({
@@ -45,7 +46,14 @@ exports.index = function (req, res) {
         include: [
             {
                 model: db.User,
-                where: userWhere
+                where: userWhere,
+                include: [
+                    {
+                        model: db.Membership,
+                        as: 'memberships',
+                        where: membershipWhere
+                    }
+                ]
             },
             {
                 model: db.Address,
