@@ -28,4 +28,4 @@ Thumbs.db
 /node_modules
 
 # Misc
-/public
+/public/host_photos/*

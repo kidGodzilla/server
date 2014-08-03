@@ -63,7 +63,7 @@ app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.bodyParser());
 app.use(expressValidator());
-app.use(express.static(__dirname + 'public'));
+app.use(express.static('public'));
 app.use(i18n.init);
 
 // Development only configuration
