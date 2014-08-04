@@ -41,19 +41,41 @@ exports.update = function (req, res) {
  */
 exports.create = function (req, res) {
 
-    // Validate input
-    if (!req.body.address)
+    // Make sure an address is provided
+    if (!req.body.address) {
         res.send(400);
+        return;
+    }
 
-    // Create the host
-    db.Address.create(
-        req.body.address,
-        updatableAttributes
-    ).success(function (address) {
-            res.send({ address: address });
-        }).error(function (error) {
-            res.send(500, error);
-        })
+    // A user should not have more than 2 addresses (1 for its wwoof profile, 1 for its host profile)
+    var total;
+    db.Address.count({
+        include: {
+            model: db.Host,
+            where: { userId: req.user.id }
+        }
+    }).then(function (count) {
+        total = count;
+        return db.Address.count({
+            include: {
+                model: db.Wwoofer,
+                where: { userId: req.user.id }
+            }
+        });
+    }).then(function (count) {
+        total += count;
+        if (total >= 2) {
+            throw new error.ConflictError();
+        }
+        // Create the address
+        return db.Address.create(req.body.address, updatableAttributes);
+    }).then(function (address) {
+        res.send({ address: address });
+    }).catch(error.ConflictError, function () {
+        res.send(409);
+    }).catch(function (error) {
+        res.send(500, error);
+    });
 };
 
 /**
