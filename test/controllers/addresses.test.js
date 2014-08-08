@@ -91,18 +91,6 @@ describe('PUT /api/addresses/:id', function () {
             });
     });
 
-    it('should return 400 if the id in URL param does not match the id in body', function (done) {
-        request(helper.url)
-            .put('/api/addresses/1')
-            .set('cookie', helper.authCookie)
-            .send({ address: { id: 2 } })
-            .expect(400)
-            .end(function (err, res) {
-                if (err) return done(err);
-                done();
-            });
-    });
-
     it('should return 404 if address belongs to another user', function (done) {
         request(helper.url)
             .put('/api/addresses/1')

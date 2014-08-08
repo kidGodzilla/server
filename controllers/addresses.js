@@ -29,8 +29,8 @@ exports.single = function (req, res) {
  */
 exports.update = function (req, res) {
 
-    // Make sure an address is provided and that the ids match
-    if (!req.body.address || req.body.address.id != req.params.id) {
+    // Make sure an address is provided
+    if (!req.body.address) {
         res.send(400);
         return;
     }
