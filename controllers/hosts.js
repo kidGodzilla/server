@@ -3,7 +3,7 @@
  */
 var db = require('../models'),
     Sequelize = require('sequelize'),
-    updatableAttributes = ['farmName', 'shortDescription', 'fullDescription', 'webSite', 'travelDetails', 'userId', 'addressId'];
+    updatableAttributes = ['farmName', 'shortDescription', 'fullDescription', 'webSite', 'travelDetails', 'userId', 'addressId', 'noPhone', 'noEmail'];
 /**
  * Returns a paginated list of hosts.
  * This route can be accessed from non authenticated users, but returns additional data for members (TODO).
