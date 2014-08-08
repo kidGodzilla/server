@@ -23,7 +23,7 @@ login = exports.login = function login(isAdmin) {
         // Set the test user
         exports.user = user;
         return request(url)
-            .post('/login')
+            .post('/api/users/login')
             .send({ username: email, password: 'plop' })
             .expect(200);
     }).then(function (res) {
@@ -65,6 +65,20 @@ exports.getSampleHost = getSampleHost = function (userId) {
         userId: userId
     };
 };
+
+/**
+ * Gets a sample wwoofer.
+ * @param wwooferId The id of the user the wwoofer should belong to.
+ * @type {Object} A sample wwoofer.
+ */
+exports.getSampleWwoofer = getSampleWwoofer = function (userId) {
+    return {
+        tripMotivation: 'Discover organic farming',
+        intro: 'I\'m a believer',
+        userId: userId
+    };
+};
+
 /**
  * Gets a sample photo.
  * @param hostId The id of the host the photo should belong to.
@@ -79,6 +93,19 @@ exports.getSamplePhoto = getSamplePhoto = function (hostId) {
 };
 
 /**
+ * Gets a sample address.
+ * @type {Object} A sample address.
+ */
+exports.getSampleAddress = getSampleAddress = function () {
+    return {
+        address1: 'Main St.',
+        zipCode: '98105',
+        city: 'Seattle',
+        countryId: 1
+    };
+};
+
+/**
  * Creates a host.
  * @param userId The id of the user the host should belong to.
  * @returns {Object} A promise of the created host.
@@ -88,10 +115,27 @@ exports.createHost = function (userId) {
 };
 
 /**
+ * Creates a wwoofer.
+ * @param userId The id of the user the wwoofer should belong to.
+ * @returns {Object} A promise of the created wwoofer.
+ */
+exports.createWwoofer = function (userId) {
+    return db.Wwoofer.create(getSampleWwoofer(userId));
+};
+
+/**
  * Creates a photo.
  * @param hostId The id of the host the photo should belong to.
  * @returns {Object} A promise of the created photo.
  */
 exports.createPhoto = function (hostId) {
     return db.Photo.create(getSamplePhoto(hostId));
+};
+
+/**
+ * Creates an address.
+ * @returns {Object} A promise of the created address.
+ */
+exports.createAddress = function () {
+    return db.Address.create(getSampleAddress());
 };
