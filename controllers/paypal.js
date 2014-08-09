@@ -39,8 +39,8 @@ exports.start = function (req, res) {
             payment_method: "paypal"
         },
         redirect_urls: {
-            return_url: "http://localhost:3333/payment/execute",
-            cancel_url: "http://localhost:3333/app/payment/cancel"
+            return_url: config.serverUrl + "/payment/execute",
+            cancel_url: config.serverUrl + "/payment/cancel"
         },
         transactions: [
             {
@@ -135,4 +135,11 @@ exports.execute = function (req, res) {
             res.send(500, error);
         });
     });
+};
+
+/**
+ * Handles cancelled payments in PayPal.
+ */
+exports.cancel = function (req, res) {
+    res.redirect(config.appBaseUrl + '/payment/cancel');
 };

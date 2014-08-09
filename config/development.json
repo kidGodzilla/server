@@ -31,5 +31,6 @@
             "pass": "thepassword"
         }
     },
-    "appBaseUrl": "http://localhost:4200"
+    "appBaseUrl": "http://localhost:4200",
+    "serverUrl": "http://localhost:3333"
 }

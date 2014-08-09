@@ -19,6 +19,7 @@ module.exports = function (app, passport) {
 
     app.get('/payment/start', auth.ensureAuthenticated, paypal.start);
     app.get('/payment/execute', auth.ensureAuthenticated, paypal.execute);
+    app.get('/payment/cancel', auth.ensureAuthenticated, paypal.cancel);
 
     app.post('/api/users/login', passport.authenticate('local'), auth.loginCallback);
     app.post('/api/users/logout', auth.logout);
