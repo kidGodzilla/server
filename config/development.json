@@ -1,9 +1,11 @@
 {
     "port": 3333,
     "mysql": {
-        "schema": "wwoof",
-        "username": "foo",
-        "password": "bar"
+        "host": "localhost",
+        "port": 3306,
+        "user": "foo",
+        "password": "bar",
+        "database": "wwoof"
     },
     "jwt_secret": "thisisasecret",
     "session_secret": "anothersecret",

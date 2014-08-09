@@ -101,7 +101,7 @@ db
         console.log('Database synchronised.');
 
         // Load sample data in the database
-        // require('./server/bootstrap-db')(db);
+        // require('./bootstrap-db')(db);
 
         http.createServer(app).listen(app.get('port'), function () {
             console.log('Express server listening on port ' + app.get('port'));
