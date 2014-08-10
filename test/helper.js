@@ -154,6 +154,17 @@ exports.getSampleAddress = getSampleAddress = function () {
 };
 
 /**
+ * Gets a sample country.
+ * @type {Object} A sample country.
+ */
+exports.getSampleCountry = getSampleCountry = function () {
+    return {
+        code: 'FR',
+        name: 'France'
+    };
+};
+
+/**
  * Gets a sample membership.
  * @param userId The id of the user the membership should belong to.
  * @param type The type of membership (H/W).
@@ -202,6 +213,14 @@ exports.createPhoto = function (hostId) {
  */
 exports.createAddress = function () {
     return db.Address.create(getSampleAddress());
+};
+
+/**
+ * Creates a country.
+ * @returns {Object} A promise of the created country.
+ */
+exports.createCountry = function () {
+    return db.Country.create(getSampleCountry());
 };
 
 /**

@@ -18,16 +18,18 @@ describe('GET /api/countries', function () {
 describe('GET /api/countries/:id', function () {
 
     it('should return a single country', function (done) {
-        request(helper.url)
-            .get('/api/countries/1')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) return done(err);
-                res.body.should.have.property('country');
-                res.body.country.should.have.property('id');
-                res.body.country.id.should.equal(1);
-                done();
-            });
+        helper.createCountry().then(function (country) {
+            request(helper.url)
+                .get('/api/countries/' + country.id)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) return done(err);
+                    res.body.should.have.property('country');
+                    res.body.country.should.have.property('id');
+                    res.body.country.id.should.equal(1);
+                    done();
+                });
+        });
     });
 
     it('should return 404 if id not valid', function (done) {
