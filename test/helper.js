@@ -165,6 +165,17 @@ exports.getSampleCountry = getSampleCountry = function () {
 };
 
 /**
+ * Gets a sample department.
+ * @type {Object} A sample department.
+ */
+exports.getSampleDepartment = getSampleDepartment = function () {
+    return {
+        code: '03',
+        name: 'Allier'
+    };
+};
+
+/**
  * Gets a sample membership.
  * @param userId The id of the user the membership should belong to.
  * @param type The type of membership (H/W).
@@ -221,6 +232,14 @@ exports.createAddress = function () {
  */
 exports.createCountry = function () {
     return db.Country.create(getSampleCountry());
+};
+
+/**
+ * Creates a department.
+ * @returns {Object} A promise of the created department.
+ */
+exports.createDepartment = function () {
+    return db.Department.create(getSampleDepartment());
 };
 
 /**
