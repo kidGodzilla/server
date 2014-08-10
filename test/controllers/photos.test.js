@@ -1,6 +1,5 @@
-var request = require('supertest');
-var helper = require('../helper');
-var db = require('../../models');
+var request = require('supertest'),
+    helper = require('../helper');
 
 describe('GET /api/photos/:id', function () {
 
@@ -202,7 +201,7 @@ describe('DELETE /api/photos/:id', function () {
                 .end(function (err, res) {
                     if (err) return done(err);
 
-                    db.Photo.find(photo.id).then(function (photo) {
+                    helper.db.Photo.find(photo.id).then(function (photo) {
                         (photo === null).should.be.true;
                         done();
                     });

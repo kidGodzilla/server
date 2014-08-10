@@ -1,12 +1,15 @@
 /**
  * Mocha test helper.
  */
-var request = require('supertest-as-promised');
-var url = exports.url = 'http://localhost:3333';
-var db = require('../models');
+var request = require('supertest-as-promised'),
+    url = exports.url = 'http://localhost:3333',
+    http = require('http'),
+    config,
+    app,
+    db = exports.db;
 
 /**
- * Logs user in and set the authentication cookie.
+ * Logs user in and sets the authentication cookie.
  */
 login = exports.login = function login(isAdmin) {
 
@@ -34,20 +37,65 @@ login = exports.login = function login(isAdmin) {
 };
 
 /**
- * Mocha hooks.
+ * Resets the database (drops then recreates all tables).
+ */
+resetDatabase = exports.resetDatabase = function resetDatabase() {
+    return db.sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
+        .then(function () {
+            console.log('Resetting database ' + config.mysql.database + '...');
+            return db.sequelize.sync({ force: true });
+        })
+        .then(function () {
+            return db.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+        })
+        .then(function () {
+            return db.sequelize.query('ALTER TABLE users MODIFY birthDate DATE');
+        })
+        .then(function () {
+            return db.sequelize.query('ALTER TABLE wwoofers MODIFY birthDate2 DATE');
+        });
+};
+
+/**
+ * Before all tests.
  */
 before(function (done) {
+
+    console.log('Set NODE_ENV variable for testing...');
+    process.env.NODE_ENV = 'test';
+
+    config = require('../config/config')();
+    db = require('../models');
+    app = require('../app');
+
+    // Disable Sequelize logging
     db.sequelize.options.logging = false;
-    done();
+
+    // Start server
+    http.createServer(app).listen(app.get('port'), function () {
+        console.log('Express server listening on port ' + app.get('port'));
+        done();
+    });
 });
+
+/**
+ * After all tests.
+ */
 after(function (done) {
     db.sequelize.options.logging = console.log;
     done();
 });
+
+/**
+ * Before each test.
+ */
 beforeEach(function (done) {
-    login(false).then(function () {
-        done();
-    });
+    resetDatabase()
+        .then(function () {
+            return login(false);
+        }).then(function () {
+            done();
+        });
 });
 
 /**
@@ -106,6 +154,22 @@ exports.getSampleAddress = getSampleAddress = function () {
 };
 
 /**
+ * Gets a sample membership.
+ * @param userId The id of the user the membership should belong to.
+ * @param type The type of membership (H/W).
+ * @type {Object} A sample membership.
+ */
+exports.getSampleMembership = getSampleMembership = function (userId, type) {
+    return {
+        type: type,
+        expireAt: '2016-05-27 00:00:00',
+        itemCode: 'H',
+        paymentType: 'PPL',
+        userId: userId
+    };
+};
+
+/**
  * Creates a host.
  * @param userId The id of the user the host should belong to.
  * @returns {Object} A promise of the created host.
@@ -138,4 +202,14 @@ exports.createPhoto = function (hostId) {
  */
 exports.createAddress = function () {
     return db.Address.create(getSampleAddress());
+};
+
+/**
+ * Creates a membership.
+ * @param userId The id of the user the membership should belong to.
+ * @param type The type of membership (H/W).
+ * @returns {Object} A promise of the created membership.
+ */
+exports.createMembership = function (userId, type) {
+    return db.Membership.create(getSampleMembership(userId, type));
 };

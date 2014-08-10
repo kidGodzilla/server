@@ -1,5 +1,5 @@
-var request = require('supertest');
-var helper = require('../helper');
+var request = require('supertest'),
+    helper = require('../helper');
 
 describe('GET /api/hosts', function () {
 

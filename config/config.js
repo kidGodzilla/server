@@ -7,6 +7,8 @@ module.exports = function() {
             return require('./development');
         case 'production':
             return require('./production');
+        case 'test':
+            return require('./test');
         default:
             return require('./development');
     }
