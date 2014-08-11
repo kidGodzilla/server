@@ -4,16 +4,20 @@ var request = require('supertest'),
 describe('GET /api/photos/:id', function () {
 
     it('should return a single photo', function (done) {
-        request(helper.url)
-            .get('/api/photos/1')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) return done(err);
-                res.body.should.have.property('photo');
-                res.body.photo.should.have.property('id');
-                res.body.photo.id.should.equal(1);
-                done();
-            });
+        helper.createHost(helper.user.id).then(function (host) {
+            return helper.createPhoto(host.id);
+        }).then(function (photo) {
+            request(helper.url)
+                .get('/api/photos/' + photo.id)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) return done(err);
+                    res.body.should.have.property('photo');
+                    res.body.photo.should.have.property('id');
+                    res.body.photo.id.should.equal(1);
+                    done();
+                });
+        });
     });
 
     it('should return 404 if id not valid', function (done) {
@@ -42,15 +46,24 @@ describe('PUT /api/photos/:id', function () {
     });
 
     it('should return 404 if photo belongs to another user', function (done) {
-        request(helper.url)
-            .put('/api/photos/1')
-            .set('cookie', helper.authCookie)
-            .send({ photo: {} })
-            .expect(404)
-            .end(function (err, res) {
-                if (err) return done(err);
-                done();
-            });
+        var photo;
+        helper.createHost(helper.user.id).then(function (host) {
+            return helper.createPhoto(host.id);
+        }).then(function (newPhoto) {
+            photo = newPhoto;
+            // Login as someone else
+            return helper.login(false);
+        }).then(function () {
+            request(helper.url)
+                .put('/api/photos/' + photo.id)
+                .set('cookie', helper.authCookie)
+                .send({ photo: {} })
+                .expect(404)
+                .end(function (err, res) {
+                    if (err) return done(err);
+                    done();
+                });
+        });
     });
 
     it('should return 200 if photo was updated', function (done) {
