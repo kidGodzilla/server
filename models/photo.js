@@ -5,8 +5,7 @@
  * @returns {Object} The Sequelize model.
  */
 var path = require('path'),
-    photoFolder = '\\public\\host_photos\\',
-    appDir = path.dirname(require.main.filename);
+    photoFolder = './public/host_photos/';
 
 module.exports = function (sequelize, DataTypes) {
     var Photo = sequelize.define('Photo', {
@@ -19,7 +18,7 @@ module.exports = function (sequelize, DataTypes) {
                 Photo.belongsTo(models.Host, { onDelete: 'cascade' })
             },
             getFullPath: function (fileName) {
-                return appDir + photoFolder + fileName;
+                return path.join(photoFolder, fileName);
             }
         }
     });
