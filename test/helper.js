@@ -6,7 +6,7 @@ var request = require('supertest-as-promised'),
     http = require('http'),
     config,
     app,
-    db = exports.db;
+    db;
 
 /**
  * Logs user in and sets the authentication cookie.
@@ -65,7 +65,7 @@ before(function (done) {
     process.env.NODE_ENV = 'test';
 
     config = require('../config/config')();
-    db = require('../models');
+    db = exports.db = require('../models');
     app = require('../app');
 
     // Disable Sequelize logging

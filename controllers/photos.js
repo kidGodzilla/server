@@ -87,59 +87,61 @@ exports.create = function (req, res) {
         )
     }).then(function (host) {
 
-        if (host) {
-            // Get file
-            var file = req.files.file;
-
-            // Check format
-            if (allowedMimeTypes.indexOf(file.headers['content-type']) == -1) {
-                console.log('Unsupported file type: ' + file.headers['content-type'] + ' (' + file.name + ')');
-                fs.unlinkSync(file.path);
-                res.send(415); // Unsupported Media Type
-                return;
-            }
-
-            // Check size
-            if (file.size > 5000000) { // 5mb
-                console.log('File is too big: ' + file.size + ' bytes (' + file.name + ')');
-                fs.unlinkSync(file.path);
-                res.send(413); // Request Entity Too Large
-                return;
-            }
-
-            // Build new file name
-            var newFileName = path.basename(file.path);
-            var newPath = db.Photo.getFullPath(newFileName);
-
-            // Move the photo from the temporary directory to the photo directory
-            fs.rename(file.path, newPath, function (error) {
-
-                // Handle error
-                if (error) {
-                    console.error('Cannot move photo ' + file.originalFilename + ' to ' + newPath + '.');
-                    console.error(error);
-                    fs.unlinkSync(file.path);
-                    return;
-                }
-
-                // Log
-                console.log('Photo \'' + file.originalFilename + '\' moved to ' + newPath + '.');
-
-                // Create the photo in the database
-                db.Photo.create({
-                    fileName: newFileName,
-                    hostId: req.body.hostId
-                }).success(function (photo) {
-                    res.send({ photo: photo });
-                }).error(function (error) {
-                    // Remove file
-                    fs.unlinkSync(newPath);
-                    res.send(500, error);
-                })
-            });
-        } else {
-            res.send(404);
+        if (!host) {
+            throw new error.NotFoundError();
         }
+
+        // Get file
+        var file = req.files.file;
+
+        // Check format
+        if (allowedMimeTypes.indexOf(file.headers['content-type']) == -1) {
+            console.log('Unsupported file type: ' + file.headers['content-type'] + ' (' + file.name + ')');
+            fs.unlinkSync(file.path);
+            res.send(415); // Unsupported Media Type
+            return;
+        }
+
+        // Check size
+        if (file.size > 5000000) { // 5mb
+            console.log('File is too big: ' + file.size + ' bytes (' + file.name + ')');
+            fs.unlinkSync(file.path);
+            res.send(413); // Request Entity Too Large
+            return;
+        }
+
+        // Build new file name
+        var newFileName = path.basename(file.path);
+        var newPath = db.Photo.getFullPath(newFileName);
+
+        // Move the photo from the temporary directory to the photo directory
+        fs.rename(file.path, newPath, function (error) {
+
+            // Handle error
+            if (error) {
+                console.error('Cannot move photo ' + file.originalFilename + ' to ' + newPath + '.');
+                console.error(error);
+                fs.unlinkSync(file.path);
+                return;
+            }
+
+            // Log
+            console.log('Photo \'' + file.originalFilename + '\' moved to ' + newPath + '.');
+
+            // Create the photo in the database
+            db.Photo.create({
+                fileName: newFileName,
+                hostId: req.body.hostId
+            }).success(function (photo) {
+                res.send({ photo: photo });
+            }).error(function (error) {
+                // Remove file
+                fs.unlinkSync(newPath);
+                res.send(500, error);
+            })
+        });
+    }).catch(error.NotFoundError, function () {
+        res.send(404, "Host not found.");
     }).catch(function (error) {
         res.send(500, error);
     });
@@ -165,10 +167,10 @@ exports.delete = function (req, res) {
 
         // Delete the photo on the file system (ignore errors)
         var fullPath = db.Photo.getFullPath(photo.fileName);
-        fs.unlink(fullPath, function () {
-            // Delete the photo in the database
-            return photo.destroy();
-        });
+        fs.unlink(fullPath);
+
+        // Delete the photo in the database
+        return photo.destroy();
     }).then(function () {
         res.send(204);
     }).catch(error.NotFoundError, function () {
