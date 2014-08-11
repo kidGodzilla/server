@@ -3,7 +3,6 @@
  */
 var db = require('../models'),
     Sequelize = require('sequelize'),
-    path = require('path'),
     fs = require('fs'),
     error = require('../utils/error'),
     allowedMimeTypes = ['image/gif', 'image/jpeg', 'image/pjpeg', 'image/tiff', 'image/png'],
@@ -17,12 +16,12 @@ exports.single = function (req, res) {
         where: { id: req.params.id }
     }).success(function (photo) {
         if (!photo) {
-            res.send(404);
+            res.status(404).end();
         } else {
             res.send({ photo: photo });
         }
     }).error(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -33,7 +32,7 @@ exports.update = function (req, res) {
 
     // Validate input
     if (!req.body.photo) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -57,12 +56,12 @@ exports.update = function (req, res) {
         }
     }).then(function (photo) {
         if (!photo) {
-            res.send(404);
+            res.status(404).end();
         } else {
             res.send({ photo: photo });
         }
     }, function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -73,7 +72,8 @@ exports.create = function (req, res) {
 
     // Data validation
     if (!req.query.hostId || !req.files || !req.files.file) {
-        return res.send(400);
+        res.status(400).end();
+        return;
     }
 
     // Only admins can upload a photo for a host that does not belong to the current user
@@ -95,55 +95,37 @@ exports.create = function (req, res) {
         var file = req.files.file;
 
         // Check format
-        if (allowedMimeTypes.indexOf(file.headers['content-type']) == -1) {
-            console.log('Unsupported file type: ' + file.headers['content-type'] + ' (' + file.name + ')');
-            fs.unlinkSync(file.path);
-            res.send(415); // Unsupported Media Type
-            return;
+        if (allowedMimeTypes.indexOf(file.mimetype) == -1) {
+            throw new error.UnsupportedMediaTypeError();
         }
 
         // Check size
         if (file.size > 5000000) { // 5mb
-            console.log('File is too big: ' + file.size + ' bytes (' + file.name + ')');
-            fs.unlinkSync(file.path);
-            res.send(413); // Request Entity Too Large
-            return;
+            throw new error.FileTooBigError();
         }
 
-        // Build new file name
-        var newFileName = path.basename(file.path);
-        var newPath = db.Photo.getFullPath(newFileName);
-
-        // Move the photo from the temporary directory to the photo directory
-        fs.rename(file.path, newPath, function (error) {
-
-            // Handle error
-            if (error) {
-                console.error('Cannot move photo ' + file.originalFilename + ' to ' + newPath + '.');
-                console.error(error);
-                fs.unlinkSync(file.path);
-                return;
-            }
-
-            // Log
-            console.log('Photo \'' + file.originalFilename + '\' moved to ' + newPath + '.');
-
-            // Create the photo in the database
-            db.Photo.create({
-                fileName: newFileName,
-                hostId: req.body.hostId
-            }).success(function (photo) {
-                res.send({ photo: photo });
-            }).error(function (error) {
-                // Remove file
-                fs.unlinkSync(newPath);
-                res.send(500, error);
-            })
+        // Create the photo in the database
+        return db.Photo.create({
+            fileName: file.name,
+            hostId: req.body.hostId
         });
+
+    }).then(function (photo) {
+        res.send({ photo: photo });
     }).catch(error.NotFoundError, function () {
-        res.send(404, "Host not found.");
+        // Remove file
+        fs.unlink(req.files.file.path);
+        res.status(404).end();
+    }).catch(error.UnsupportedMediaTypeError, function () {
+        // Remove file
+        fs.unlink(req.files.file.path);
+        res.status(415).end(); // Unsupported Media Type
+    }).catch(error.FileTooBigError, function () {
+        // Remove file
+        fs.unlink(req.files.file.path);
+        res.status(413).end(); // Request Entity Too Large
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -165,17 +147,19 @@ exports.delete = function (req, res) {
 
         if (!photo) throw new error.NotFoundError();
 
-        // Delete the photo on the file system (ignore errors)
+        // Delete the photo on the file system
         var fullPath = db.Photo.getFullPath(photo.fileName);
-        fs.unlink(fullPath);
+        fs.unlink(fullPath, function () {
+            // Ignore errors
+        });
 
         // Delete the photo in the database
         return photo.destroy();
     }).then(function () {
-        res.send(204);
+        res.status(204).end();
     }).catch(error.NotFoundError, function () {
-        res.send(404);
+        res.status(404).end();
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };

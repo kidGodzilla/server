@@ -1,4 +1,9 @@
 var express = require('express'),
+    cookieParser = require('cookie-parser'),
+    bodyParser = require('body-parser'),
+    methodOverride = require('method-override'),
+    errorhandler = require('errorhandler'),
+    morgan  = require('morgan'),
     expressValidator = require('express-validator'),
     passport = require('passport'),
     config = require('./config/config')(),
@@ -49,36 +54,34 @@ i18n.configure({
 });
 
 // Configure session
-app.use(express.cookieParser());
+app.use(cookieParser());
 app.use(session({
     secret: config.session_secret,
     cookie: { httpOnly: false },
-    store: new SessionStore(config.mysql_session)
+    store: new SessionStore(config.mysql_session),
+    saveUninitialized: true,
+    resave: true
 }));
 
 // Configure the rest of the application
 app.use(domainWrapper());
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(express.methodOverride());
-app.use(express.bodyParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(methodOverride('X-HTTP-Method-Override'));
 app.use(expressValidator());
 app.use(express.static('public'));
 app.use(i18n.init);
 
-// Development only configuration
-app.configure('development', function () {
-    app.use(express.logger('dev'));
-    app.use(express.errorHandler());
-});
-
 // Configure authentication with passport
 require('./config/passport')(app, passport);
 
-// Use router (must be declared after passport)
-app.use(app.router);
-
 // Init all routes
 require('./routes')(app, passport);
+
+// Development and test only configurations
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('combined'));
+    app.use(errorhandler());
+}
 
 exports = module.exports = app;

@@ -18,9 +18,9 @@ exports.single = function (req, res) {
         }
         res.send({ address: address });
     }).catch(error.NotFoundError, function () {
-        res.send(404);
+        res.status(404).end();
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -31,7 +31,7 @@ exports.update = function (req, res) {
 
     // Make sure an address is provided
     if (!req.body.address) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -49,9 +49,9 @@ exports.update = function (req, res) {
     }).then (function (address) {
         res.send({ address: address });
     }).catch(error.NotFoundError, function () {
-        res.send(404);
+        res.status(404).end();
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -62,7 +62,7 @@ exports.create = function (req, res) {
 
     // Make sure an address is provided
     if (!req.body.address) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -72,13 +72,13 @@ exports.create = function (req, res) {
             throw new error.ConflictError();
         }
         // Create the address
-        return db.Address.create(req.body.address, updatableAttributes);
+        return db.Address.create(req.body.address, { fields: updatableAttributes });
     }).then(function (address) {
         res.send({ address: address });
     }).catch(error.ConflictError, function () {
-        res.send(409);
+        res.status(409).end();
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 

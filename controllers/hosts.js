@@ -3,6 +3,7 @@
  */
 var db = require('../models'),
     Sequelize = require('sequelize'),
+    error = require('../utils/error'),
     updatableAttributes = ['farmName', 'shortDescription', 'fullDescription', 'webSite', 'travelDetails', 'userId', 'addressId', 'noPhone', 'noEmail'];
 /**
  * Returns a paginated list of hosts.
@@ -13,8 +14,7 @@ exports.index = function (req, res) {
     // Extract query params
     var limit = isNaN(parseInt(req.query.limit)) ? 20 : parseInt(req.query.limit),
         offset = isNaN(parseInt(req.query.offset)) ? 0 : parseInt(req.query.offset),
-        dptWhere = req.query.dpt ? { id: req.query.dpt } : null,
-        membershipWhere = { expireAt: { gt: new Date() } };
+        dptWhere = req.query.dpt ? { id: req.query.dpt } : null;
 
     // Prepare host where condition (hide suspended/pending hosts to non admin users)
     // $BUG: hostWhere must always contain at least one condition, otherwise the query fails
@@ -27,6 +27,12 @@ exports.index = function (req, res) {
         if (req.query.pendingOnly === 'true') {
             hostWhere.args.push({ isPending: true });
         }
+    }
+
+    // Prepare membership where condition
+    var membershipWhere = null;
+    if (!req.user || !req.user.isAdmin) {
+        membershipWhere = { expireAt: { gt: new Date() } };
     }
 
     // Prepare user where condition
@@ -79,7 +85,7 @@ exports.index = function (req, res) {
             }
         });
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -100,10 +106,10 @@ exports.single = function (req, res) {
         if (host) {
             res.send({ host: host });
         } else {
-            res.send(404);
+            res.status(404).end();
         }
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -114,7 +120,7 @@ exports.update = function (req, res) {
 
     // Validate input
     if (!req.body.host) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -149,10 +155,10 @@ exports.update = function (req, res) {
         if (host) {
             res.send({ host: host });
         } else {
-            res.send(404);
+            res.status(404).end();
         }
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -163,7 +169,7 @@ exports.create = function (req, res) {
 
     // Validate input
     if (!req.body.host) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -171,27 +177,30 @@ exports.create = function (req, res) {
     db.Host.find({
         where: { userId: req.user.id }
     }).then(function (host) {
+
         if (host) {
             // Existing host found for this user
-            res.send(409);
-        } else {
-            // Set the user id + default values
-            req.body.host.userId = req.user.id;
-            req.body.host.isPending = true;
-            req.body.host.isSuspended = false;
-
-            // Make isPending and isSuspended updatable
-            var attributes = updatableAttributes.concat(['isPending', 'isSuspended']);
-
-            // Create the host
-            return db.Host.create(
-                req.body.host,
-                attributes
-            );
+            throw new error.ConflictError();
         }
+
+        // Set the user id + default values
+        req.body.host.userId = req.user.id;
+        req.body.host.isPending = true;
+        req.body.host.isSuspended = false;
+
+        // Make isPending and isSuspended updatable
+        var attributes = updatableAttributes.concat(['isPending', 'isSuspended']);
+
+        // Create the host
+        return db.Host.create(
+            req.body.host,
+            attributes
+        );
     }).then(function (host) {
         res.send({ host: host });
-    }, function (error) {
-        res.send(500, error);
+    }).catch(error.ConflictError, function () {
+        res.status(409).end();
+    }).catch(function (error) {
+        res.status(500).send(error);
     });
 };

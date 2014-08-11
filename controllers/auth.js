@@ -11,7 +11,7 @@ exports.loginCallback = function (req, res) {
     if (req.isAuthenticated()) {
         res.send({ user: req.user })
     } else {
-        res.send(500);
+        res.status(500).end();
     }
 };
 
@@ -22,7 +22,7 @@ exports.ensureAuthenticated = function (req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     }
-    res.send(401);
+    return res.status(401).end();
 };
 
 /**
@@ -30,5 +30,5 @@ exports.ensureAuthenticated = function (req, res, next) {
  */
 exports.logout = function (req, res) {
     req.logout();
-    res.send(200, "Bye!");
+    return res.status(200).end();
 };

@@ -50,18 +50,18 @@ exports.single = function (req, res) {
     }).then(function (user) {
         // Not found
         if (!user) {
-            res.send(404);
+            res.status(404).end();
             return;
         }
         // Unauthorized
         if (user.id != req.user.id) {
-            res.send(401);
+            res.status(401).end();
             return;
         }
         // Success
         res.send({ user: user });
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -73,7 +73,7 @@ exports.create = function (req, res) {
 
     // Validate input
     if (!req.body.user || req.body.user.password.length < 8) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -84,7 +84,7 @@ exports.create = function (req, res) {
 
         // Email address is already in use
         if (user) {
-            res.send(409); // Conflict
+            res.status(409).end(); // Conflict
         } else {
             // Create a hash of the password
             req.body.user.passwordHash = crypto.createHash('sha1').update(req.body.user.password).digest("hex");
@@ -107,14 +107,14 @@ exports.create = function (req, res) {
                 firstName: user.firstName
             }, function (error) {
                 if (error) {
-                    res.send(500, error);
+                    res.status(500).send(error);
                 } else {
                     res.send({ user: user });
                 }
             });
         }
     }, function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     })
 };
 
@@ -130,7 +130,8 @@ exports.update = function (req, res) {
 
         // Email address is already in use
         if (count > 0) {
-            res.send(409); // Conflict
+            res.status(409).end(); // Conflict
+            return;
         }
 
         // Find the original user
@@ -150,10 +151,10 @@ exports.update = function (req, res) {
                         res.send(500, error);
                     })
             } else {
-                res.send(404);
+                res.status(404).end();
             }
         }).error(function (error) {
-            res.send(500, error);
+            res.status(500).send(error);
         });
     })
 };

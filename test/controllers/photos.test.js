@@ -110,11 +110,7 @@ describe('POST /api/photos', function () {
             .set('cookie', helper.authCookie)
             .attach('file', 'test/arbre.jpg')
             .send({ photo: {} })
-            .expect(404)
-            .end(function (err, res) {
-                if (err) return done(err);
-                done();
-            });
+            .expect(404, done);
     });
 
     it('should return 404 if host belongs to another user', function (done) {
@@ -122,11 +118,7 @@ describe('POST /api/photos', function () {
             .post('/api/photos?hostId=2')
             .set('cookie', helper.authCookie)
             .attach('file', 'test/arbre.jpg')
-            .expect(404)
-            .end(function (err, res) {
-                if (err) return done(err);
-                done();
-            });
+            .expect(404, done);
     });
 
     it('should return 415 if the photo does not have the right mime type', function (done) {
@@ -196,11 +188,7 @@ describe('DELETE /api/photos/:id', function () {
             .delete('/api/photos/1')
             .set('cookie', helper.authCookie)
             .send({ photo: {} })
-            .expect(404)
-            .end(function (err, res) {
-                if (err) return done(err);
-                done();
-            });
+            .expect(404, done);
     });
 
     it('should return 204 (even if the file does not exist on drive)', function (done) {

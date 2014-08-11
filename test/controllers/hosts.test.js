@@ -59,14 +59,17 @@ describe('GET /api/hosts', function () {
 describe('GET /api/hosts/:id', function () {
 
     it('should return 200', function (done) {
-        request(helper.url)
-            .get('/api/hosts/1')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) return done(err);
-                res.body.should.have.property('host');
-                done();
-            });
+        helper.createHost(helper.user.id).then(function (host) {
+            request(helper.url)
+                .get('/api/hosts/' + host.id)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) return done(err);
+                    res.body.should.have.property('host');
+                    res.body.host.id.should.equal(host.id);
+                    done();
+                });
+        });
     });
 });
 
@@ -88,11 +91,7 @@ describe('POST /api/hosts', function () {
                 .post('/api/hosts')
                 .set('cookie', helper.authCookie)
                 .send({ host: {} })
-                .expect(409)
-                .end(function (err, res) {
-                    if (err) return done(err);
-                    done();
-                });
+                .expect(409, done);
         });
     });
 

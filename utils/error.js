@@ -14,6 +14,22 @@ var ConflictError = exports.ConflictError = function() {
     Error.apply(this, arguments);
 };
 
+/**
+ * Custom error for 413 Entity Too Large.
+ */
+var FileTooBigError = exports.FileTooBigError = function () {
+    Error.apply(this, arguments);
+};
+
+/**
+ * Custom error for 415 Unsupported Media Type.
+ */
+var UnsupportedMediaTypeError = exports.UnsupportedMediaTypeError = function () {
+    Error.apply(this, arguments);
+};
+
 // Inherit from Error
 util.inherits(NotFoundError, Error);
 util.inherits(ConflictError, Error);
+util.inherits(FileTooBigError, Error);
+util.inherits(UnsupportedMediaTypeError, Error);

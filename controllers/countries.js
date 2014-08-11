@@ -12,7 +12,7 @@ exports.index = function (req, res) {
         .success(function (countries) {
             res.send({ countries: countries });
         }).error(function (error) {
-            res.send(500, error);
+            res.status(500).send(error);
         });
 };
 
@@ -27,9 +27,9 @@ exports.single = function (req, res) {
         if (country) {
             res.send({ country: country });
         } else {
-            res.send(404);
+            res.status(404).end();
         }
     }).error(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };

@@ -9,13 +9,13 @@ exports.index = function (req, res) {
     req.checkQuery('userId', 'Invalid or missing user id').notEmpty().isInt();
     var errors = req.validationErrors();
     if (errors) {
-        res.send(400, errors);
+        res.status(400).send(errors);
         return;
     }
 
     // Only admin can query memberships that do not belong to them
     if (req.query.userId != req.user.id && !req.user.isAdmin) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -31,6 +31,6 @@ exports.index = function (req, res) {
             }
         });
     }).catch(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };

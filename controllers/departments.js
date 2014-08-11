@@ -12,7 +12,7 @@ exports.index = function (req, res) {
         .success(function (departments) {
             res.send({ departments: departments });
         }).error(function (error) {
-            res.send(500, error);
+            res.status(500).send(error);
         });
 };
 
@@ -27,9 +27,9 @@ exports.single = function (req, res) {
         if (department) {
             res.send({ department: department });
         } else {
-            res.send(404);
+            res.status(404).end();
         }
     }).error(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };

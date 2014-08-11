@@ -17,7 +17,7 @@ exports.start = function (req, res) {
 
     // Validate data
     if (!basePrice || basePrice <= 0 || !type) {
-        res.send(500, "Base price or type is invalid.");
+        res.status(500).send("Base price or type is invalid.");
         return;
     }
 
@@ -57,7 +57,7 @@ exports.start = function (req, res) {
     paypal.payment.create(payment, function (error, payment) {
         if (error) {
             console.log(error);
-            res.send(500);
+            res.status(500).end();
         } else {
             if (payment.payer.payment_method === 'paypal') {
 
@@ -91,7 +91,7 @@ exports.execute = function (req, res) {
 
     // Validate data
     if (!membership.paymentId || !payerId || !membership.itemCode || !membership.type) {
-        res.send(500);
+        res.status(500).end();
         return;
     }
 
@@ -100,7 +100,7 @@ exports.execute = function (req, res) {
     paypal.payment.execute(membership.paymentId, details, function (error, payment) {
 
         if (error) {
-            res.send(500);
+            res.status(500).end();
             return;
         }
 
@@ -132,7 +132,7 @@ exports.execute = function (req, res) {
         }).then(function (newMembership) {
             res.redirect(config.appBaseUrl + '/payment/complete');
         }).catch(function (error) {
-            res.send(500, error);
+            res.status(500).send(error);
         });
     });
 };

@@ -1,4 +1,3 @@
-var application = require('./controllers/application');
 var auth = require('./controllers/auth');
 var users = require('./controllers/users');
 var hosts = require('./controllers/hosts');
@@ -9,6 +8,16 @@ var wwoofers = require('./controllers/wwoofers');
 var countries = require('./controllers/countries');
 var paypal = require('./controllers/paypal');
 var memberships = require('./controllers/memberships');
+var multer  = require('multer');
+
+// TODO: move multer options into config file + create 'photo.preCreate' handler
+var multerOpts = {
+    dest: './public/host_photos/',
+    limits: {
+        fileSize: 5000000, // 5mb
+        files: 1
+    }
+};
 
 /**
  * Configures all routes.
@@ -40,7 +49,7 @@ module.exports = function (app, passport) {
 
     app.get('/api/photos/:id', photos.single);
     app.put('/api/photos/:id', auth.ensureAuthenticated, photos.update);
-    app.post('/api/photos', auth.ensureAuthenticated, photos.create);
+    app.post('/api/photos', auth.ensureAuthenticated, multer(multerOpts), photos.create);
     app.delete('/api/photos/:id', auth.ensureAuthenticated, photos.delete);
 
     app.get('/api/departments', departments.index);

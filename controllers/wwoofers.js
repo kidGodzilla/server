@@ -57,7 +57,7 @@ exports.single = function (req, res) {
         ]
     }).success(function (wwoofer) {
         if (!wwoofer) {
-            res.send(404);
+            res.status(404).end();
         } else {
             res.send({ wwoofer: wwoofer });
         }
@@ -71,7 +71,7 @@ exports.update = function (req, res) {
 
     // Validate input
     if (!req.body.wwoofer) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -90,13 +90,13 @@ exports.update = function (req, res) {
             ).success(function (wwoofer) {
                     res.send({ wwoofer: wwoofer });
                 }).error(function (error) {
-                    res.send(500, error);
+                    res.status(500).send(error);
                 })
         } else {
-            res.send(404);
+            res.status(404).end();
         }
     }).error(function (error) {
-        res.send(500, error);
+        res.status(500).send(error);
     });
 };
 
@@ -107,11 +107,11 @@ exports.create = function (req, res) {
 
     // Validate input
     if (!req.body.wwoofer) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
     if (req.body.wwoofer.userId != req.user.id) {
-        res.send(400);
+        res.status(400).end();
         return;
     }
 
@@ -121,7 +121,7 @@ exports.create = function (req, res) {
     }).success(function (wwoofer) {
         if (wwoofer) {
             // Existing wwoofer found for this user
-            res.send(409);
+            res.status(409).end();
         } else {
             // Create the host
             db.Wwoofer.create(
