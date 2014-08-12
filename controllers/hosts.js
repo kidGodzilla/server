@@ -4,6 +4,7 @@
 var db = require('../models'),
     Sequelize = require('sequelize'),
     error = require('../utils/error'),
+    moment = require('moment'),
     updatableAttributes = ['farmName', 'shortDescription', 'fullDescription', 'webSite', 'travelDetails', 'userId', 'addressId', 'noPhone', 'noEmail'];
 /**
  * Returns a paginated list of hosts.
@@ -29,10 +30,13 @@ exports.index = function (req, res) {
         }
     }
 
-    // Prepare membership where condition
-    var membershipWhere = null;
+    // Exclude hosts without membership if user is not an admin
+    // $BUG: this part of the query could not be generated properly via the ORM
     if (!req.user || !req.user.isAdmin) {
-        membershipWhere = { expireAt: { gt: new Date() } };
+        hostWhere.args.push('(SELECT `userId` FROM `memberships` ' +
+            'WHERE `hosts`.`userId` = `memberships`.`userId` ' +
+            'AND `memberships`.`type` = \'H\' ' +
+            'AND `memberships`.`expireAt` > \'' + moment().toISOString() + '\' LIMIT 1) IS NOT NULL');
     }
 
     // Prepare user where condition
@@ -52,14 +56,7 @@ exports.index = function (req, res) {
         include: [
             {
                 model: db.User,
-                where: userWhere,
-                include: [
-                    {
-                        model: db.Membership,
-                        as: 'memberships',
-                        where: membershipWhere
-                    }
-                ]
+                where: userWhere
             },
             {
                 model: db.Address,
